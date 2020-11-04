@@ -90,10 +90,10 @@ void expand(int nb, int nyb, int nxb, int nz, int nx, float *a, float *b)
     }
     for     (ix=0; ix<nxb; ix++) {
         for (iz=0; iz<nb; iz++)         b[ix*nyb+iz] = b[ix*nyb+nb];//top
-        for (iz=nz+nb; iz<nyb; iz++) b[ix*nyb+iz] = b[ix*nyb+nb+nz-1];//bottom
+        for (iz=nz+nb; iz<nyb; iz++)    b[ix*nyb+iz] = b[ix*nyb+nb+nz-1];//bottom
     }
     for (iz=0; iz<nyb; iz++){
-        for(ix=0; ix<nb; ix++)  b[ix*nyb+iz] = b[nb*nyb+iz];//left
+        for(ix=0; ix<nb; ix++)          b[ix*nyb+iz] = b[nb*nyb+nb];//left
         for(ix=nb+nx; ix<nxb; ix++)     b[ix*nyb+iz] = b[(nb+nx-1)*nyb+iz];//right
     }
 }
@@ -133,7 +133,7 @@ sf_file createFile3D (const char *name, int dimensions[3], float spacings[3], in
         sprintf(key_d,"d%i",i+1);
         sprintf(key_o,"o%i",i+1);
         sf_putint(Fdata,key_n,dimensions[i]);
-        sf_putint(Fdata,key_d,spacings[i]);
+        sf_putfloat(Fdata,key_d,spacings[i]);
         sf_putint(Fdata,key_o,origins[i]);
     }
 
@@ -168,7 +168,10 @@ velocity getVelFields(sf_file FvelModel, geometry param)
     velocity h_model;
 
     h_model.velField = new float[param.nxy];
-    sf_floatread(h_model.velField, param.nxy, FvelModel);
+    //sf_floatread(h_model.velField, param.nxy, FvelModel);
+    for(int i=0; i < param.nxy; i++){
+        h_model.velField[i] = 3000;
+    }
 
     h_model.extVelField = new float[param.nbxy];
     memset(h_model.extVelField,0,param.nbytes);
@@ -217,10 +220,11 @@ seismicData allocHostSeisData(geometry param, int nt)
 source fillSrc(geometry param, velocity h_model)
 {
     source wavelet;
-    wavelet.totalTime = 2.5;               /* total time of wave propagation, sec */
+    wavelet.totalTime = 3;               /* total time of wave propagation, sec */
     wavelet.timeStep = 0.5 * param.modelDx / h_model.maxVel;         /* time step assuming constant vp, sec */
     wavelet.timeSamplesNt = round(wavelet.totalTime / wavelet.timeStep);      /* number of time steps */
-    wavelet.snapStep = round(0.1 * wavelet.timeSamplesNt);   /* save snapshot every ... steps */
+    //wavelet.snapStep = round(0.1 * wavelet.timeSamplesNt);   [> save snapshot every ... steps <]
+    wavelet.snapStep = 50;
 
     float f0 = 10.0;                    /* source dominawavelet.timeSamplesNt frequency, Hz */
     float t0 = 1.2 / f0;                /* source padding to move wavelet from left of zero */
@@ -297,17 +301,21 @@ int main(int argc, char *argv[])
 
     // Set Output files
     int dimensions[3] = {h_wavelet.timeSamplesNt,param.nReceptors,param.nShots};
-    float spacings[3] = {1,1,1};
+    float spacings[3] = {h_wavelet.timeStep,param.modelDx,10};
     int origins[3] = {0,0,0};
     sf_file Fdata_directWave = createFile3D("comOD",dimensions,spacings,origins);
     sf_file Fonly_directWave = createFile3D("OD",dimensions,spacings,origins);
     sf_file Fdata = createFile3D("data",dimensions,spacings,origins);
 
+    sf_putint(Fdata,"incShots",param.incShots);
+    sf_putint(Fdata,"gxbeg",param.firstReceptorPos);
+    sf_putint(Fdata,"sxbeg",param.srcPosX);
+    sf_putint(Fdata,"sybeg",param.srcPosY);
 
     test_getParameters(param, h_wavelet);
 
     // ===================MODELING======================
-    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, false);
+    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, true);
     // =================================================
 
     printf("Clean memory...");

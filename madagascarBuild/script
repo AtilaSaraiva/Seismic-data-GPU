@@ -1,7 +1,9 @@
 rm --force snap/*
-rm seismicData.rsf
+scons -c
 cd ..
 rm mod
 make
-cd -
+cd verticalPadding
+make
+cd ../madagascarBuild
 scons

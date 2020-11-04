@@ -171,26 +171,28 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
         printf("Time loop...\n");
         for (int it = 0; it < h_wavelet.timeSamplesNt; it++)
         {
-            taper_gpu<<<grid,block>>>(d_tapermask, d_u1);
-            taper_gpu<<<grid,block>>>(d_tapermask, d_u2);
+            //taper_gpu<<<grid,block>>>(d_tapermask, d_u1);
+            //taper_gpu<<<grid,block>>>(d_tapermask, d_u2);
 
             // These kernels are in the same stream so they will be executed one by one
-            kernel_add_wavelet<<<grid, block>>>(d_u2, d_wavelet, it, param.srcPosX, param.srcPosY);
+            //kernel_add_wavelet<<<grid, block>>>(d_u2, d_wavelet, it, param.srcPosX, param.srcPosY);
             kernel_2dfd<<<grid, block>>>(d_u1, d_u2, d_vp);
-            //CHECK(cudaDeviceSynchronize());
-            receptors<<<(param.nReceptors + 32) / 32, 32>>>(it, param.nReceptors, param.firstReceptorPos, d_u1, d_data);
+            //receptors<<<(param.nReceptors + 32) / 32, 32>>>(it, param.nReceptors, param.firstReceptorPos, d_u1, d_data);
+
+            // Save snapshot every h_wavelet.snapStep iterations
+            if ((it % h_wavelet.snapStep == 0) && snaps == true)
+            {
+                if (it == 0) saveSnapshotIstep(it, d_vp, param.modelNxBorder, param.modelNyBorder, "vp", shot);
+                printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
+                saveSnapshotIstep(it, d_u1, param.modelNxBorder, param.modelNyBorder, "u1", shot);
+                saveSnapshotIstep(it, d_u2, param.modelNxBorder, param.modelNyBorder, "u2", shot);
+            }
 
             // Exchange time steps
             float *d_u3 = d_u1;
             d_u1 = d_u2;
             d_u2 = d_u3;
 
-            // Save snapshot every h_wavelet.snapStep iterations
-            if ((it % h_wavelet.snapStep == 0) && snaps == true)
-            {
-                printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
-                saveSnapshotIstep(it, d_u3, param.modelNxBorder, param.modelNyBorder, "u3", shot);
-            }
         }
 
         CHECK(cudaMemset(d_u1, 0, param.nbytes))
@@ -213,7 +215,7 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
             d_u2 = d_u3;
 
             // Save snapshot every h_wavelet.snapStep iterations
-            if ((it % h_wavelet.snapStep == 0) && snaps == true)
+            if ((it % h_wavelet.snapStep == 0) && snaps == false)
             {
                 printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
                 saveSnapshotIstep(it, d_u3, param.modelNxBorder, param.modelNyBorder, "u3", shot);

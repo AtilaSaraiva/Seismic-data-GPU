@@ -9,7 +9,7 @@ endif
 set shortmess=aoO
 badd +1 cuwaveprop2d.cu
 badd +42 cudaKernels.cu
-badd +195 main.cu
+badd +203 main.cu
 badd +1 verticalPadding/verticalPad.cpp
 badd +1 verticalPad.cpp
 argglobal
@@ -33,34 +33,11 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 63 - ((26 * winheight(0) + 17) / 35)
+let s:l = 163 - ((15 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-63
-normal! 0
-tabedit main.cu
-set splitbelow splitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-argglobal
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 195 - ((17 * winheight(0) + 17) / 35)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-195
+163
 normal! 0
 tabedit cudaKernels.cu
 set splitbelow splitright
@@ -79,13 +56,36 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 42 - ((26 * winheight(0) + 17) / 35)
+let s:l = 121 - ((8 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-42
-normal! 025|
-tabnext 3
+121
+normal! 023|
+tabedit main.cu
+set splitbelow splitright
+wincmd t
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+argglobal
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 146 - ((28 * winheight(0) + 19) / 38)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+146
+normal! 038|
+tabnext 2
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
