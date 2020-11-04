@@ -241,7 +241,7 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
 
         sf_floatwrite(h_seisData.directWaveOnly, param.nReceptors * h_wavelet.timeSamplesNt, Fonly_directWave);
 
-        param.firstReceptorPos += param.incShots;
+        param.firstReceptorPos += param.incRec;
         param.srcPosX += param.incShots;
     }
 

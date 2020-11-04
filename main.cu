@@ -31,6 +31,7 @@ typedef struct{
     int nReceptors;
     int lastReceptorPos;
     int incShots;
+    int incRec;
     int modelNx;
     int modelNy;
     int modelNxBorder;
@@ -67,8 +68,6 @@ typedef struct{
 #include "cuwaveprop2d.cu"
 
 using namespace std;
-
-//void modeling(int nx, int ny, int nb, int nr, int nt, int gxbeg, int gxend, int isrc, int jsrc, float dx, float dy, float dt, float *h_vpe, float *h_dvpe, float *h_tapermask, float *h_data, float *h_directwave, float * h_wavelet, bool snaps, int nshots, int incShots, sf_file Fonly_directWave, sf_file Fdata_directWave, sf_file Fdata);
 
 void dummyVelField(int nxb, int nyb, int nb, float *h_vpe, float *h_dvpe)
 {
@@ -149,6 +148,7 @@ geometry getParameters(sf_file FvelModel)
     sf_getint("gxbeg",&param.firstReceptorPos);
     sf_getint("nshots",&param.nShots);
     sf_getint("incShots",&param.incShots);
+    sf_getint("incRec",&param.incRec);
     sf_histint(FvelModel, "n1",&param.modelNy);
     sf_histint(FvelModel, "n2", &param.modelNx);
     sf_histfloat(FvelModel, "d1",&param.modelDy);

@@ -34,12 +34,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 193 - ((25 * winheight(0) + 19) / 38)
+let s:l = 242 - ((13 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-193
-normal! 08|
+242
+normal! 092|
 tabedit cudaKernels.cu
 set splitbelow splitright
 wincmd t
@@ -80,12 +80,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 19) / 38)
+let s:l = 23 - ((22 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
-normal! 016|
+23
+normal! 0140|
 tabedit main.cu
 set splitbelow splitright
 wincmd t
@@ -103,12 +103,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 318 - ((21 * winheight(0) + 19) / 38)
+let s:l = 271 - ((8 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-318
-normal! 0112|
+271
+normal! 05|
 tabnext 4
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'

@@ -26,7 +26,7 @@ Flow('velPadded','marmvel','../verticalPadding/pad padding=50')
 Result('velPadded','grey')
 
 #Flow('seismicData directWave seismicDataWithDW','velPadded','../mod incShots=16 nshots=14 nr=136 isrc=0 jsrc=68 gxbeg=0 comOD=${TARGETS[2]} vel=${SOURCES[0]} data=${TARGETS[0]} OD=${TARGETS[1]}',stdout=0)
-Flow('seismicData directWave seismicDataWithDW','velPadded','../mod incShots=16 nshots=1 nr=136 isrc=0 jsrc=68 gxbeg=0 comOD=${TARGETS[2]} vel=${SOURCES[0]} data=${TARGETS[0]} OD=${TARGETS[1]}',stdout=0)
+Flow('seismicData directWave seismicDataWithDW','velPadded','../mod incShots=16 incShots=16 nshots=1 nr=136 isrc=0 jsrc=68 gxbeg=0 comOD=${TARGETS[2]} vel=${SOURCES[0]} data=${TARGETS[0]} OD=${TARGETS[1]}',stdout=0)
 
 Result('seismicData', 'grey')
 End()
