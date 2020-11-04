@@ -1,0 +1,26 @@
+	d1=8
+	d2=25
+	n1=375
+	n2=368
+	unit1=m
+	unit2=m
+	label1="Depth"
+	label2="Offset"
+	title="Marmousi velocity (m/s)"
+	data_format="native_float"
+	esize=4
+	in="../../marmo-vel"
+3.1-git	pad	LSRTM_GPU_proj/FD-Seismic-data/madagascarBuild:	asqs@marreca	Wed Nov  4 17:30:45 2020
+
+	d2=25
+	n2=368
+	o1=0
+	d3=1
+	n3=1
+	o2=0
+	data_format="native_float"
+	o3=0
+	esize=4
+	in="/var/tmp/LSRTM_GPU_proj/FD-Seismic-data/madagascarBuild/velPadded.rsf@"
+	d1=8
+	n1=425

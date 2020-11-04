@@ -13,7 +13,9 @@ __constant__ int c_nr;        /* num of receivers */
 __constant__ int c_nxy;       /* total number of elements in the snap array (border included)*/
 __constant__ int c_nb;        /* border size */
 __constant__ int c_nt;        /* time steps */
-__constant__ float c_dt2dx2;  /* dt2 / dx2 for fd*/
+__constant__ float c_dt2;  /* dt2 / dx2 for fd*/
+__constant__ float c_one_dx2;  /* dt2 / dx2 for fd*/
+__constant__ float c_one_dy2;  /* dt2 / dx2 for fd*/
 
 __global__ void taper_gpu (float *d_tapermask, float *campo)
 {
@@ -91,11 +93,13 @@ void saveSnapshotIstep(int it, float *data, int nx, int ny, const char *tag, int
 }
 
 
-//void modeling(int nx, int ny, int nb, int nr, int nt, int gxbeg, int gxend, int isrc, int jsrc, float dx, float dy, float dt, float *h_vpe, float *h_dvpe, float *h_tapermask, float *h_data, float *h_directwave, float * h_wavelet, bool snaps, int nshots, int incShots, sf_file Fonly_directWave, sf_file Fdata_directWave, sf_file Fdata)
 void modeling(geometry param, velocity h_model, source h_wavelet, float *h_tapermask, seismicData h_seisData, sf_file Fonly_directWave, sf_file Fdata_directWave, sf_file Fdata, int snaps)
 {
-    float dt2dx2 =
-        (h_wavelet.timeStep * h_wavelet.timeStep) / (param.modelDx * param.modelDx);   /* const for fd stencil */
+    float dt2 = (h_wavelet.timeStep * h_wavelet.timeStep);
+    float one_dx2 = float(1) / (param.modelDx * param.modelDx);
+    float one_dy2 = float(1) / (param.modelDy * param.modelDy);
+    cerr<<"one_dx2 = "<<one_dx2<<endl;
+    cerr<<"one_dy2 = "<<one_dy2<<endl;
     size_t dbytes = param.nReceptors * h_wavelet.timeSamplesNt * sizeof(float);
     size_t tbytes = h_wavelet.timeSamplesNt * sizeof(float);
 
@@ -131,7 +135,9 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
     CHECK(cudaMemcpyToSymbol(c_nxy, &param.nbxy, sizeof(int)));
     CHECK(cudaMemcpyToSymbol(c_nb, &param.taperBorder, sizeof(int)));
     CHECK(cudaMemcpyToSymbol(c_nt, &h_wavelet.timeSamplesNt, sizeof(int)));
-    CHECK(cudaMemcpyToSymbol(c_dt2dx2, &dt2dx2, sizeof(float)));
+    CHECK(cudaMemcpyToSymbol(c_dt2, &dt2, sizeof(float)));
+    CHECK(cudaMemcpyToSymbol(c_one_dx2, &one_dx2, sizeof(float)));
+    CHECK(cudaMemcpyToSymbol(c_one_dy2, &one_dy2, sizeof(float)));
     printf("\t%f MB\n", (4 * param.nbytes + tbytes)/1024/1024);
     printf("OK\n");
 
@@ -171,21 +177,21 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
         printf("Time loop...\n");
         for (int it = 0; it < h_wavelet.timeSamplesNt; it++)
         {
-            //taper_gpu<<<grid,block>>>(d_tapermask, d_u1);
-            //taper_gpu<<<grid,block>>>(d_tapermask, d_u2);
+            taper_gpu<<<grid,block>>>(d_tapermask, d_u1);
+            taper_gpu<<<grid,block>>>(d_tapermask, d_u2);
 
             // These kernels are in the same stream so they will be executed one by one
-            //kernel_add_wavelet<<<grid, block>>>(d_u2, d_wavelet, it, param.srcPosX, param.srcPosY);
+            kernel_add_wavelet<<<grid, block>>>(d_u2, d_wavelet, it, param.srcPosX, param.srcPosY);
             kernel_2dfd<<<grid, block>>>(d_u1, d_u2, d_vp);
-            //receptors<<<(param.nReceptors + 32) / 32, 32>>>(it, param.nReceptors, param.firstReceptorPos, d_u1, d_data);
+            receptors<<<(param.nReceptors + 32) / 32, 32>>>(it, param.nReceptors, param.firstReceptorPos, d_u1, d_data);
 
+            if(it % 50 == 0) cerr<<it+1<<"/"<<h_wavelet.timeSamplesNt<<endl;
             // Save snapshot every h_wavelet.snapStep iterations
             if ((it % h_wavelet.snapStep == 0) && snaps == true)
             {
                 if (it == 0) saveSnapshotIstep(it, d_vp, param.modelNxBorder, param.modelNyBorder, "vp", shot);
-                printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
-                saveSnapshotIstep(it, d_u1, param.modelNxBorder, param.modelNyBorder, "u1", shot);
-                saveSnapshotIstep(it, d_u2, param.modelNxBorder, param.modelNyBorder, "u2", shot);
+                cerr<<it+1<<"/"<<h_wavelet.timeSamplesNt<<endl;
+                saveSnapshotIstep(it, d_u2, param.modelNxBorder, param.modelNyBorder, "u3", shot);
             }
 
             // Exchange time steps
@@ -206,7 +212,6 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
             // These kernels are in the same stream so they will be executed one by one
             kernel_add_wavelet<<<grid, block>>>(d_u2, d_wavelet, it, param.srcPosX, param.srcPosY);
             kernel_2dfd<<<grid, block>>>(d_u1, d_u2, d_dvp);
-            //CHECK(cudaDeviceSynchronize());
             receptors<<<(param.nReceptors + 32) / 32, 32>>>(it, param.nReceptors, param.firstReceptorPos, d_u1, d_directwave);
 
             // Exchange time steps
@@ -214,12 +219,13 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
             d_u1 = d_u2;
             d_u2 = d_u3;
 
+            if(it % 50 == 0) cerr<<it+1<<"/"<<h_wavelet.timeSamplesNt<<endl;
             // Save snapshot every h_wavelet.snapStep iterations
-            if ((it % h_wavelet.snapStep == 0) && snaps == false)
-            {
-                printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
-                saveSnapshotIstep(it, d_u3, param.modelNxBorder, param.modelNyBorder, "u3", shot);
-            }
+            //if ((it % h_wavelet.snapStep == 0) && snaps == false)
+            //{
+                //printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
+                //saveSnapshotIstep(it, d_u3, param.modelNxBorder, param.modelNyBorder, "u3", shot);
+            //}
         }
 
         CHECK(cudaMemcpy(h_seisData.seismogram, d_data, dbytes, cudaMemcpyDeviceToHost));

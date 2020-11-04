@@ -1,0 +1,18 @@
+3.1-git	mod	LSRTM_GPU_proj/FD-Seismic-data/madagascarBuild:	asqs@marreca	Wed Nov  4 17:30:52 2020
+
+	d2=25
+	n2=136
+	o1=0
+	d3=10
+	n3=1
+	o2=0
+	data_format="native_float"
+	o3=0
+	esize=4
+	gxbeg=0
+	in="/var/tmp/LSRTM_GPU_proj/FD-Seismic-data/madagascarBuild/seismicData.rsf@"
+	sxbeg=68
+	incShots=16
+	sybeg=0
+	d1=0.000692672
+	n1=4331

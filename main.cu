@@ -93,7 +93,7 @@ void expand(int nb, int nyb, int nxb, int nz, int nx, float *a, float *b)
         for (iz=nz+nb; iz<nyb; iz++)    b[ix*nyb+iz] = b[ix*nyb+nb+nz-1];//bottom
     }
     for (iz=0; iz<nyb; iz++){
-        for(ix=0; ix<nb; ix++)          b[ix*nyb+iz] = b[nb*nyb+nb];//left
+        for(ix=0; ix<nb; ix++)          b[ix*nyb+iz] = b[nb*nyb+iz];//left
         for(ix=nb+nx; ix<nxb; ix++)     b[ix*nyb+iz] = b[(nb+nx-1)*nyb+iz];//right
     }
 }
@@ -154,7 +154,7 @@ geometry getParameters(sf_file FvelModel)
     sf_histfloat(FvelModel, "d1",&param.modelDy);
     sf_histfloat(FvelModel, "d2", &param.modelDx);
     param.lastReceptorPos = param.firstReceptorPos + param.nReceptors;
-    param.taperBorder = 0.2 * param.modelNx;
+    param.taperBorder = 0.3 * param.modelNx;
     param.nxy = param.modelNx * param.modelNy;
     param.modelNxBorder = param.modelNx + 2 * param.taperBorder;
     param.modelNyBorder = param.modelNy + 2 * param.taperBorder;
@@ -168,10 +168,7 @@ velocity getVelFields(sf_file FvelModel, geometry param)
     velocity h_model;
 
     h_model.velField = new float[param.nxy];
-    //sf_floatread(h_model.velField, param.nxy, FvelModel);
-    for(int i=0; i < param.nxy; i++){
-        h_model.velField[i] = 3000;
-    }
+    sf_floatread(h_model.velField, param.nxy, FvelModel);
 
     h_model.extVelField = new float[param.nbxy];
     memset(h_model.extVelField,0,param.nbytes);
@@ -221,7 +218,10 @@ source fillSrc(geometry param, velocity h_model)
 {
     source wavelet;
     wavelet.totalTime = 3;               /* total time of wave propagation, sec */
-    wavelet.timeStep = 0.5 * param.modelDx / h_model.maxVel;         /* time step assuming constant vp, sec */
+    //wavelet.timeStep = 0.5 * param.modelDy / h_model.maxVel;         /* time step assuming constant vp, sec */
+    float one_dx2 = float(1) / (param.modelDx * param.modelDx);
+    float one_dy2 = float(1) / (param.modelDy * param.modelDy);
+    wavelet.timeStep = 0.5 / (h_model.maxVel * sqrt(one_dx2 + one_dy2)) ;         /* time step assuming constant vp, sec */
     wavelet.timeSamplesNt = round(wavelet.totalTime / wavelet.timeStep);      /* number of time steps */
     //wavelet.snapStep = round(0.1 * wavelet.timeSamplesNt);   [> save snapshot every ... steps <]
     wavelet.snapStep = 50;
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
     test_getParameters(param, h_wavelet);
 
     // ===================MODELING======================
-    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, true);
+    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, false);
     // =================================================
 
     printf("Clean memory...");
