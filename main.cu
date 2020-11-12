@@ -100,7 +100,7 @@ void expand(int nb, int nyb, int nxb, int nz, int nx, float *a, float *b)
 void abc_coef (int nb, float *abc)
 {
     for(int i=0; i<nb; i++){
-        abc[i] = exp (-pow(0.001 * (nb - i + 1),2.0));
+        abc[i] = exp (-pow(0.002 * (nb - i + 1),2.0));
     }
 }
 
@@ -218,10 +218,10 @@ source fillSrc(geometry param, velocity h_model)
 {
     source wavelet;
     wavelet.totalTime = 3;               /* total time of wave propagation, sec */
-    //wavelet.timeStep = 0.5 * param.modelDy / h_model.maxVel;         /* time step assuming constant vp, sec */
+    wavelet.timeStep = 0.5 * param.modelDy / h_model.maxVel;         /* time step assuming constant vp, sec */
     float one_dx2 = float(1) / (param.modelDx * param.modelDx);
     float one_dy2 = float(1) / (param.modelDy * param.modelDy);
-    wavelet.timeStep = 0.5 / (h_model.maxVel * sqrt(one_dx2 + one_dy2)) ;         /* time step assuming constant vp, sec */
+    //wavelet.timeStep = 0.4 / (h_model.maxVel * sqrt(one_dx2 + one_dy2)) ;         [> time step assuming constant vp, sec <]
     wavelet.timeSamplesNt = round(wavelet.totalTime / wavelet.timeStep);      /* number of time steps */
     //wavelet.snapStep = round(0.1 * wavelet.timeSamplesNt);   [> save snapshot every ... steps <]
     wavelet.snapStep = 50;
@@ -308,6 +308,7 @@ int main(int argc, char *argv[])
     sf_file Fdata = createFile3D("data",dimensions,spacings,origins);
 
     sf_putint(Fdata,"incShots",param.incShots);
+    sf_putint(Fdata,"incRec",param.incRec);
     sf_putint(Fdata,"gxbeg",param.firstReceptorPos);
     sf_putint(Fdata,"sxbeg",param.srcPosX);
     sf_putint(Fdata,"sybeg",param.srcPosY);
@@ -315,7 +316,7 @@ int main(int argc, char *argv[])
     test_getParameters(param, h_wavelet);
 
     // ===================MODELING======================
-    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, false);
+    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, true);
     // =================================================
 
     printf("Clean memory...");

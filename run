@@ -1,0 +1,2 @@
+cd ~/LSRTM_GPU_proj/FD-Seismic-data
+make

@@ -220,12 +220,6 @@ void modeling(geometry param, velocity h_model, source h_wavelet, float *h_taper
             d_u2 = d_u3;
 
             if(it % 50 == 0) cerr<<it+1<<"/"<<h_wavelet.timeSamplesNt<<endl;
-            // Save snapshot every h_wavelet.snapStep iterations
-            //if ((it % h_wavelet.snapStep == 0) && snaps == false)
-            //{
-                //printf("%i/%i\n", it+1, h_wavelet.timeSamplesNt);
-                //saveSnapshotIstep(it, d_u3, param.modelNxBorder, param.modelNyBorder, "u3", shot);
-            //}
         }
 
         CHECK(cudaMemcpy(h_seisData.seismogram, d_data, dbytes, cudaMemcpyDeviceToHost));
