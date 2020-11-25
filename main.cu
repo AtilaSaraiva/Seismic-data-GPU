@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
     test_getParameters(param, h_wavelet);
 
     // ===================MODELING======================
-    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, true);
+    modeling(param, h_model, h_wavelet, h_tapermask, h_seisData, Fonly_directWave, Fdata_directWave, Fdata, false);
     // =================================================
 
     printf("Clean memory...");

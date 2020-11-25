@@ -1,14 +1,14 @@
-3.1-git	mod	asqs/LSRTM_GPU_proj/FD-Seismic-data:	asqs@marreca	Wed Nov 11 11:43:40 2020
+3.1-git	mod	asqs/LSRTM_GPU_proj/FD-Seismic-data:	asqs@marreca	Wed Nov 18 12:28:55 2020
 
 	d2=25
 	n2=368
 	o1=0
 	d3=10
-	n3=3
+	n3=1
 	o2=0
 	data_format="native_float"
 	o3=0
 	esize=4
-	in="/var/tmp/modTqSXU0"
-	d1=0.000885976
-	n1=3386
+	in="/var/tmp/mod9O1zsO"
+	d1=0.000930233
+	n1=3225
